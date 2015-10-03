@@ -10,8 +10,15 @@
 *****@Contact: samueladeshina73@gmail.com
 ****/
 	require_once('connection.php');
+	require_once('ExceptionManager.class.php');
 	class Query extends connection
 	{
+		public $exception;
+		public function __construct(ExceptionManager $e)
+		{
+			$this->exception = $e;
+			parent::__construct($this->exception);
+		}
 		function Execute($query){
 			if ($this->driver == 'SQL Server')
 			{
@@ -23,6 +30,7 @@
 						$errorMsg = $connection->errorInfo();
 						return 'An Error occured: '.$errorMsg[2];
 					}
+
 					else
 					{
 						return self::Result($query_to_execute);
@@ -31,7 +39,7 @@
 				}
 				catch (PDOException $e){
 					//Catch This Error Properly
-					echo 'Error: '.$e->getMessage();
+					return 'Error: '.$e->getMessage();
 					exit();
 				}
 				finally{
@@ -48,7 +56,7 @@
 					if (!$query_to_execute)
 					{
 						$errorMsg = $connection->errorInfo();
-						return 'An Error occured: '.$errorMsg[2];
+						throw new \Exception('An Error occured: '.$errorMsg[2]);
 					}
 					else
 					{
@@ -58,8 +66,7 @@
 				}
 				catch (PDOException $e){
 					//Catch This Error Properly
-					echo 'Error: '.$e->getMessage();
-					exit();
+					return $this->exception->returnError($e);
 				}
 				finally{
 					//Do something here. Save this connection meta details sush
@@ -74,5 +81,5 @@
 			return $_result;
 		}
 	}
-	$connection = new Query();
+	$connection = new Query(new ExceptionManager());
 ?>

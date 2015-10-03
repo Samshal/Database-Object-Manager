@@ -19,8 +19,10 @@ class Connection
 		public $driver;
 		public $params;
 		public $host;
-	function __construct()
+		public $exception;
+	function __construct(ExceptionManager $e)
 	{
+		$this->exception = $e;
 		$config = parse_ini_file('connection.ini');
 		$this->_database = $config["database"];
 		$this->_user = $config['username'];
@@ -38,7 +40,7 @@ class Connection
 			//In the meantime, this program outputs the above message but a valid error handler has
 			//to be in place to catch this exception
 			//return 'Unexpected parameters supplied or no parameter supplied at all';
-			echo 'Unexpected parameters supplied or no parameter supplied at all';
+			return $this->exception->returnError("Unexpected parameters supplied or no parameter supplied at all");
 		}
 		else
 		{
@@ -70,7 +72,8 @@ class Connection
 					//In the meantime, this program outputs the above message but a valid error handler has
 					//to be in place to catch this exception
 					//return 'Database Driver Specified is not recognized, please suggest this driver to the author';
-					echo 'Database Driver Specified is not recognized, please suggest this driver to the author';
+					//return 'Database Driver Specified is not recognized, please suggest this driver to the author';
+					return $this->exception->returnError("Database Driver Specified is not recognized, please suggest this driver to the author");
 				}
 			}
 		}
@@ -90,8 +93,7 @@ class Connection
 		catch (PDOException $e)
 		{
 			//return array('Error: '.$e->getMessage());
-			echo 'Error: '.$e->getMessage();
-			exit();
+			return $this->exception->returnError($e);
 		}			
 		finally
 		{
@@ -108,14 +110,25 @@ class Connection
 		$host = $params['Host'];
 		try
 		{
+			//$connection = new PDO("mysql:host=us-cdbr-azure-west-c.cloudapp.net;dbname=states_local_govt", "bdff189f6f196e", "caa86f74");
+			//$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$connection = new PDO("mysql:host=localhost;dbname=$database", $user, $pwd);
+			//$connection = new PDO("mysql://bdff189f6f196e:caa86f74@us-cdbr-azure-west-c.cloudapp.net/states_local_govt;"); => This worked but didn't select a database and a use db statement isn
+			//$connection->query("use states_local_govt");
+
 			return $connection;
 		}
 		catch (PDOException $e)
 		{
-			//return array('Error: '.$e->getMessage());
-			echo 'Error: '.$e->getMessage();
-			exit();
+			try
+			{
+				//return array('Error: '.$e->getMessage());
+				throw new \Exception($e->getMessage());
+			}
+			catch(Exception $e)
+			{
+				return $this->exception->returnError($e);
+			}
 		}			
 		finally
 		{
@@ -131,7 +144,9 @@ class Connection
 			//Tell the user something. there is no supplied $connection variable
 			//or the supplied value is invalid to what we are doing right now
 			//This program is going to output [Invalid Parameter Supplied]
-			echo 'Invalid Parameter Supplied';
+			//return 'Invalid Parameter Supplied';
+			return $this->exception->returnError("Invalid Parameter Supplied");
+
 		}
 		else
 		{
