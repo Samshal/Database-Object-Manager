@@ -110,11 +110,9 @@ class Connection
 		$host = $params['Host'];
 		try
 		{
-			//$connection = new PDO("mysql:host=us-cdbr-azure-west-c.cloudapp.net;dbname=states_local_govt", "bdff189f6f196e", "caa86f74");
+			//DEBUG: $connection = new PDO("mysql:host=us-cdbr-azure-west-c.cloudapp.net;dbname=states_local_govt", $user, $pwd);
 			//$connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$connection = new PDO("mysql:host=localhost;dbname=$database", $user, $pwd);
-			//$connection = new PDO("mysql://bdff189f6f196e:caa86f74@us-cdbr-azure-west-c.cloudapp.net/states_local_govt;"); => This worked but didn't select a database and a use db statement isn
-			//$connection->query("use states_local_govt");
 
 			return $connection;
 		}
